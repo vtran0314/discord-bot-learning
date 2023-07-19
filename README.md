@@ -1,8 +1,6 @@
 # Overview
 
-This is the starting project of the full level system discord bot, that is explained in this video:
-
-https://youtu.be/expDY8ULS58
+This is the starting project of the full level system discord bot, that is explained in this video by [Richard Schwabe](https://youtu.be/expDY8ULS58)
 
 # Usage
 
