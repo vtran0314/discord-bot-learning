@@ -7,6 +7,7 @@ from baseclasses.models import BaseModel
 class PointType(enum.Enum):
     MESSAGE = 2
     REACTION = 1
+    MANUAL = 0
     
 class LevelSystem():
     @staticmethod
@@ -16,6 +17,19 @@ class LevelSystem():
     @staticmethod
     def get_level_xp(level: int):
         return math.floor((4 * (level**3)) / 5)
+    
+    @staticmethod
+    def level_changed(current_points, new_points):
+        changed = False
+        current_level = LevelSystem.get_rank(current_points)
+        new_level = LevelSystem.get_rank(new_points)
+        
+        #Set change
+        if current_level != new_level:
+            changed = True
+        number_levels = new_level - current_level
+        
+        return changed, number_levels, current_level
     
 class UserActivity(BaseModel):
     
@@ -32,19 +46,25 @@ class UserActivity(BaseModel):
     points = peewee.FloatField()
     mode = peewee.CharField(choices=MODE_CHOICES, default=MODE_ADD)
     
-    def record_new_points(self, point_type: PointType, mode: str):
+    def record_new_points(self, point_type: PointType, mode: str, manual_points = 0, modifier = 1.0):
         
         points = point_type.value
+        
         
         if point_type == PointType.REACTION:
                 self.reaction = True
         
-        new_total_points =UserActivity.get_points(self.user.user_id)
+        points = points * modifier
+        
+        if point_type == PointType.MANUAL:
+                points = manual_points
+        
+        current_total_points =UserActivity.get_points(self.user.user_id)
         
         if mode == UserActivity.MODE_ADD:
-            new_total_points = new_total_points + points
+            new_total_points = current_total_points + points
         else:
-            new_total_points = new_total_points - points
+            new_total_points = current_total_points - points
         
         self.user.total_points = new_total_points
         self.user.save()
@@ -52,6 +72,8 @@ class UserActivity(BaseModel):
         self.points = points
         self.mode = mode
         self.save() #Inherent from UserActivity(BaseModel)
+        
+        return LevelSystem.level_changed(current_total_points, new_total_points)
         
     @staticmethod
     def get_points(user_id):

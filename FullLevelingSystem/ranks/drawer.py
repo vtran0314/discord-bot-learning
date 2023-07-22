@@ -76,7 +76,17 @@ class RankImage:
     def  draw_progress_bar(
         self, full_image_path, next_level_xp_diff, level_progress
         ):
-        progress =  level_progress / next_level_xp_diff
+        
+        # if next_level_xp_diff != 0:
+        #     progress =  level_progress / next_level_xp_diff
+        # else:
+        #     progress = 0
+        if next_level_xp_diff == 0 and level_progress == 0:
+            next_level_xp_diff += 1
+            progress =  level_progress / next_level_xp_diff
+        else:
+            progress =  level_progress / next_level_xp_diff
+            
         if progress == 1:
             progress = 0
             
@@ -101,7 +111,7 @@ class RankImage:
         
         draw.text(
             (full_width / 2, 270),
-            f"{progress_percentage}% (Required Pts: {required_points})",
+            f"{progress_percentage}% (Pts until next level: {required_points})",
             fill = "black",
             anchor = "ms",
             font = font_small,
@@ -110,7 +120,6 @@ class RankImage:
         img.save(full_image_path)
 
     def draw_member_avatar(self, full_image_path, member_avatar_path):
-        print (full_image_path)
         img = Image.open(full_image_path)
         avatar_img = Image.open(member_avatar_path)
         avatar_img.thumbnail((144, 144), Image.Resampling.LANCZOS)
